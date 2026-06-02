@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>물질의 밀도 비교 실험</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --bg-color: #f1f5f9;
+            --panel-bg: #ffffff;
+            --border-color: #cbd5e1;
+            --text-main: #334155;
+            --text-light: #64748b;
+        }
+
+        body {
+            font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .app-container {
+            background-color: var(--panel-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column; /* 제목을 위로 올리기 위해 세로 배치로 변경 */
+            max-width: 1000px;
+            width: 100%;
+            padding: 30px;
+            gap: 20px;
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: row;
+            gap: 40px;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .content-area {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* 비커(수조) 영역 */
+        .beaker-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .beaker-wrapper {
+            position: relative;
+        }
+
+        .beaker {
+            width: 390px; /* 기존 260px의 1.5배 */
+            height: 600px; /* 기존 400px의 1.5배 */
+            border: 6px solid #94a3b8;
+            border-top: none;
+            border-radius: 0 0 30px 30px;
+            position: relative;
+            background-color: #f8fafc;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.03);
+        }
+
+        /* 눈금선 */
+        .beaker::before, .beaker::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 15px;
+            border-top: 2px solid #94a3b8;
+            z-index: 10;
+            opacity: 0.5;
+        }
+        .beaker::before { bottom: 150px; } /* 눈금 위치도 1.5배 */
+        .beaker::after { bottom: 300px; }
+
+        .beaker-glass-shine {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            bottom: 30px;
+            width: 20px;
+            background: linear-gradient(to right, rgba(255,255,255,0.7), rgba(255,255,255,0));
+            border-radius: 10px;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .liquids-layer, .solids-layer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* 클릭은 고체만 되도록 */
+        }
+
+        .liquid {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            /* 액체가 차오르는 애니메이션 효과 적용 */
+            transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                        bottom 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.6s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(0,0,0,0.7);
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: inset 0 4px 6px rgba(255,255,255,0.2);
+            overflow: hidden; /* 높이가 0일 때 텍스트 숨김 */
+        }
+
+        .liquid span {
+            white-space: nowrap;
+        }
+
+        .solid {
+            position: absolute;
+            /* width와 height는 JS에서 동적으로 할당됩니다 */
+            transition: bottom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; /* 수정: 아이콘이 바닥에 완벽히 닿도록 아래쪽으로 정렬 */
+            align-items: center;
+            /* 사각형 배경을 제거하기 위해 border-radius와 box-shadow를 초기화합니다. */
+            border-radius: 0;
+            box-shadow: none;
+            cursor: pointer;
+            pointer-events: auto;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .solid:hover {
+            transform: scale(1.05);
+            z-index: 30;
+        }
+
+        .icon-wrapper {
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .solid-name { 
+            font-size: 11px; 
+            font-weight: bold; 
+            color: #1e293b; 
+            white-space: nowrap; 
+            margin-bottom: auto; /* 이름 텍스트를 위로 밀어내어 아이콘이 바닥에 닿게 만듭니다 */
+            padding-top: 4px;
+        }
+        
+        .beaker-guide { font-size: 13px; color: var(--text-light); text-align: center; }
+
+        /* 컨트롤 패널 영역 */
+        .controls-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .title-area { 
+            margin-bottom: 10px; 
+            padding-bottom: 15px; 
+            border-bottom: 2px solid var(--bg-color); /* 제목과 내용 사이 구분선 추가 */
+            text-align: center; /* 텍스트 가로 중앙 정렬 추가 */
+        }
+        
+        .title-top {
+            display: flex;
+            align-items: center;
+            justify-content: center; /* 플렉스(Flex) 요소인 소제목과 아이콘 중앙 정렬 추가 */
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            font-weight: 800;
+            color: #ec4899; /* 톡톡 튀는 핑크색 포인트 */
+        }
+
+        .main-title { 
+            margin: 0 0 10px 0; 
+            font-size: 24px; 
+            color: #0f172a; 
+            line-height: 1.35;
+            word-break: keep-all;
+        }
+        
+        p.desc { margin: 0; font-size: 14px; color: var(--text-light); line-height: 1.5; }
+
+        .control-group {
+            background-color: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .control-group h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 10px;
+        }
+
+        button {
+            background-color: white;
+            border: 2px solid var(--border-color);
+            padding: 12px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        button:hover {
+            border-color: #94a3b8;
+            background-color: #f1f5f9;
+        }
+
+        button.active-liquid {
+            border-color: var(--primary);
+            background-color: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .density-val {
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--text-light);
+        }
+
+        button.active-liquid .density-val { color: #2563eb; }
+
+        .btn-reset {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            margin-top: auto;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-reset:hover { background-color: #dc2626; }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- 상단 타이틀 영역 -->
+        <div class="title-area">
+            <div class="title-top">
+                <span class="subtitle">초미녀의 과학실험실</span>
+                <svg viewBox="0 0 24 24" width="28" height="28">
+                    <!-- 예쁜 비커/플라스크 아이콘 -->
+                    <path d="M10 2v5.5l-5.7 10.45A2 2 0 0 0 6 21h12a2 2 0 0 0 1.7-2.95L14 7.5V2H10zm1.5 2h1v4.8l4.4 8.06a.5.5 0 0 1-.43.74H7.53a.5.5 0 0 1-.43-.74L11.5 8.8V4z" fill="#ec4899"/>
+                    <path d="M7 16h10l1.2 2.2H5.8L7 16z" fill="#ec4899" opacity="0.3"/>
+                </svg>
+            </div>
+            <h1 class="main-title">물질이 뜨거나 가라앉는 것과 밀도의 관계</h1>
+            <p class="desc">액체 버튼을 눌러 수조에 붓고, 고체 버튼을 눌러 떨어뜨려 보세요.<br>밀도가 큰 물질은 아래로 가라앉고, 작은 물질은 위로 뜹니다.</p>
+        </div>
+
+        <!-- 하단 내용 영역 (수조 + 컨트롤) -->
+        <div class="content-area">
+            <!-- 비커 렌더링 영역 -->
+            <div class="beaker-section">
+                <div class="beaker-wrapper">
+                    <div class="beaker" id="beaker">
+                        <div class="beaker-glass-shine"></div>
+                        <div class="liquids-layer" id="liquids-layer"></div>
+                        <div class="solids-layer" id="solids-layer"></div>
+                    </div>
+                </div>
+                <div class="beaker-guide">물체를 클릭하면 수조에서 제거됩니다.</div>
+            </div>
+
+            <!-- 컨트롤 영역 -->
+            <div class="controls-section">
+                <!-- 액체 컨트롤 -->
+                <div class="control-group">
+                    <h3>💧 액체 붓기 (Toggle)</h3>
+                    <div class="btn-grid" id="liquid-buttons">
+                        <!-- 액체 버튼들이 JS로 생성됩니다 -->
+                    </div>
+                </div>
+
+                <!-- 고체 컨트롤 -->
+                <div class="control-group">
+                    <h3>🧊 물체 떨어뜨리기</h3>
+                    <div class="btn-grid" id="solid-buttons">
+                        <!-- 고체 버튼들이 JS로 생성됩니다 -->
+                    </div>
+                </div>
+
+                <button class="btn-reset" onclick="clearAll()">초기화 (모두 비우기)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. 데이터 정의
+        const LIQUIDS = {
+            'ethanol': { 
+                name: '에탄올', 
+                density: 0.79, 
+                color: 'rgba(210, 214, 220, 0.7)',
+                icon: '<svg viewBox="0 0 24 24" style="width: 100%; height: 100%;"><rect x="6" y="11" width="12" height="11" rx="2" fill="#cbd5e1"/><path d="M10 2H14V5H13V11H11V5H10V2Z" fill="#94a3b8"/><rect x="8" y="14" width="8" height="5" fill="#f8fafc"/><path d="M11 2H13V3H11V2Z" fill="#ef4444"/></svg>',
+                isSvg: true
+            },
+            'oil': { 
+                name: '식용유', 
+                density: 0.91, 
+                color: 'rgba(250, 218, 94, 0.75)',
+                icon: '<svg viewBox="0 0 24 24" style="width: 100%; height: 100%;"><rect x="6" y="9" width="12" height="13" rx="3" fill="#facc15"/><path d="M10 2H14V5H13V9H11V5H10V2Z" fill="#eab308"/><rect x="7" y="13" width="10" height="6" fill="#fef08a"/><path d="M10 2H14V4H10V2Z" fill="#ca8a04"/></svg>',
+                isSvg: true
+            },
+            'water': { 
+                name: '물', 
+                density: 1.00, 
+                color: 'rgba(59, 130, 246, 0.65)',
+                icon: '<svg viewBox="0 0 24 24" style="width: 100%; height: 100%;"><path d="M12 21.5C7.30558 21.5 3.5 17.6944 3.5 13C3.5 9.07056 9.69772 3.61633 11.3323 2.22206C11.7135 1.8967 12.2865 1.8967 12.6677 2.22206C14.3023 3.61633 20.5 9.07056 20.5 13C20.5 17.6944 16.6944 21.5 12 21.5Z" fill="#3b82f6"/></svg>',
+                isSvg: true
+            }
+        };
+
+        // sizeRatio 속성을 추가하여 물체의 상대적인 크기(부피)를 정의합니다.
+        const SOLIDS = {
+            'ice': { name: '얼음', density: 0.917, icon: '🧊', color: '#e0f2fe', sizeRatio: 1.0, isSvg: false },
+            'inhale': { 
+                name: '숨을 들이마신 사람', 
+                density: 0.95, 
+                // 상반신(가슴)이 부풀어오른 정자세 사람 형태의 SVG
+                icon: '<svg viewBox="0 0 100 150" style="width: 100%; height: 100%; display: block;"><circle cx="50" cy="25" r="18" fill="#fcd34d" /><path d="M 32 48 Q -2 75 32 100 L 68 100 Q 102 75 68 48 Z" fill="#22c55e" /><rect x="10" y="50" width="12" height="48" rx="6" fill="#fcd34d" /><rect x="78" y="50" width="12" height="48" rx="6" fill="#fcd34d" /><rect x="36" y="98" width="12" height="45" rx="4" fill="#1e293b" /><rect x="52" y="98" width="12" height="45" rx="4" fill="#1e293b" /></svg>', 
+                color: '#dcfce7', 
+                sizeRatio: 1.5, // 크기를 전체적으로 더 크게
+                isSvg: true 
+            }, 
+            'exhale': { 
+                name: '숨을 내쉰 사람', 
+                density: 1.05, 
+                // 슬림한 체형의 정자세 사람 형태의 SVG
+                icon: '<svg viewBox="0 0 100 150" style="width: 100%; height: 100%; display: block;"><circle cx="50" cy="25" r="18" fill="#fcd34d" /><rect x="34" y="48" width="32" height="52" rx="10" fill="#3b82f6" /><rect x="18" y="50" width="12" height="48" rx="6" fill="#fcd34d" /><rect x="70" y="50" width="12" height="48" rx="6" fill="#fcd34d" /><rect x="36" y="98" width="12" height="45" rx="4" fill="#1e293b" /><rect x="52" y="98" width="12" height="45" rx="4" fill="#1e293b" /></svg>', 
+                color: '#fce7f3', 
+                sizeRatio: 1.25, // 얼음보다 크지만 들이마신 사람보다는 작게
+                isSvg: true 
+            },
+            'coin': { name: '동전', density: 8.90, icon: '🪙', color: '#fef08a', sizeRatio: 0.6, isSvg: false }
+        };
+
+        // 2. 상태 관리
+        let activeLiquids = new Set();
+        let droppedSolids = [];
+        const BEAKER_HEIGHT = 600; /* 기존 400에서 600으로 변경 */
+        const LAYER_HEIGHT = 150; // 액체 1개당 차지하는 높이 (기존 100에서 150으로 변경)
+
+        // 3. 초기화 및 UI 생성
+        window.onload = () => {
+            initLiquids();
+            renderButtons();
+        };
+
+        // 액체 DOM 요소를 미리 생성해두어 애니메이션이 가능하도록 합니다.
+        function initLiquids() {
+            const liquidsLayer = document.getElementById('liquids-layer');
+            const sortedLiquidKeys = Object.keys(LIQUIDS).sort((a, b) => LIQUIDS[b].density - LIQUIDS[a].density);
+            
+            sortedLiquidKeys.forEach(key => {
+                const liq = LIQUIDS[key];
+                const el = document.createElement('div');
+                el.className = 'liquid';
+                el.id = `liquid-${key}`;
+                el.style.backgroundColor = liq.color;
+                el.style.height = '0px';
+                el.style.bottom = '0px';
+                el.style.opacity = '0';
+                el.innerHTML = `<span>${liq.name} (${liq.density.toFixed(2)})</span>`;
+                liquidsLayer.appendChild(el);
+            });
+        }
+
+        function renderButtons() {
+            const liqContainer = document.getElementById('liquid-buttons');
+            for (const [key, data] of Object.entries(LIQUIDS)) {
+                const btn = document.createElement('button');
+                btn.id = `btn-${key}`;
+                btn.onclick = () => toggleLiquid(key);
+                
+                // SVG 아이콘 적용을 위한 로직 추가
+                const iconHtml = data.isSvg 
+                    ? `<div style="height: 28px; width: 28px; display: flex; justify-content: center; align-items: center; margin-bottom: 2px;">${data.icon}</div>` 
+                    : `<span style="font-size: 24px; margin-bottom: 2px;">${data.icon}</span>`;
+                    
+                btn.innerHTML = `${iconHtml}<span>${data.name}</span><span class="density-val">밀도: ${data.density.toFixed(2)}</span>`;
+                liqContainer.appendChild(btn);
+            }
+
+            const solContainer = document.getElementById('solid-buttons');
+            for (const [key, data] of Object.entries(SOLIDS)) {
+                const btn = document.createElement('button');
+                btn.onclick = () => dropSolid(key);
+                
+                // SVG 아이콘인 경우와 일반 이모지인 경우를 구분하여 버튼 아이콘 생성
+                const iconHtml = data.isSvg 
+                    ? `<div style="height: 38px; width: 32px; display: flex; justify-content: center; align-items: center; margin-bottom: 2px;">${data.icon}</div>` 
+                    : `<span style="font-size: 28px; margin-bottom: 2px;">${data.icon}</span>`;
+                    
+                btn.innerHTML = `${iconHtml}<span>${data.name}</span><span class="density-val">밀도: ${data.density}</span>`;
+                solContainer.appendChild(btn);
+            }
+        }
+
+        // 4. 액체 추가/제거
+        function toggleLiquid(key) {
+            if (activeLiquids.has(key)) {
+                activeLiquids.delete(key);
+            } else {
+                activeLiquids.add(key);
+            }
+            
+            // 버튼 스타일 업데이트
+            document.getElementById(`btn-${key}`).classList.toggle('active-liquid');
+            
+            recalculatePhysics();
+        }
+
+        // 5. 물체 떨어뜨리기
+        function dropSolid(key) {
+            const data = SOLIDS[key];
+            const id = 'solid_' + Date.now() + Math.floor(Math.random() * 1000);
+            
+            // 물체의 크기 계산 (기본 크기 80px 기준)
+            const sizeRatio = data.sizeRatio || 1.0;
+            const solidSize = 80 * sizeRatio;
+            const fontSize = 42 * sizeRatio;
+            
+            // 랜덤한 X축 위치 (벽에 부딪히지 않도록 계산, 비커 너비 변경 반영)
+            const maxLeft = 390 - solidSize - 10;
+            const leftPos = Math.random() * (maxLeft - 10) + 10; 
+
+            const el = document.createElement('div');
+            el.className = 'solid';
+            el.id = id;
+            el.style.left = leftPos + 'px';
+            el.style.bottom = (BEAKER_HEIGHT + 20) + 'px'; // 수조 약간 위에서 시작
+            /* 배경색을 투명하게 설정하여 사각형 배경을 없앱니다. */
+            el.style.backgroundColor = 'transparent';
+            el.style.width = solidSize + 'px';
+            el.style.height = solidSize + 'px';
+            
+            // SVG와 일반 이모지를 구분하여 렌더링
+            const iconHtml = data.isSvg 
+                ? `<div class="icon-wrapper" style="height: ${solidSize * 0.65}px; width: ${solidSize * 0.6}px;">${data.icon}</div>` 
+                : `<div class="icon-wrapper" style="font-size: ${fontSize}px; line-height: 1;">${data.icon}</div>`;
+
+            // 텍스트를 위로 올리고 아이콘을 바닥으로 정렬합니다.
+            el.innerHTML = `
+                <div class="solid-name">${data.name}<br>${data.density}</div>
+                ${iconHtml}
+            `;
+            
+            // 클릭 시 제거 기능
+            el.onclick = () => removeSolid(id);
+
+            document.getElementById('solids-layer').appendChild(el);
+
+            droppedSolids.push({ id, type: key, density: data.density, size: solidSize, el });
+
+            // DOM 추가 후 애니메이션을 위해 약간의 지연 후 물리 계산
+            setTimeout(() => {
+                recalculatePhysics();
+            }, 50);
+        }
+
+        // 6. 물체 제거
+        function removeSolid(id) {
+            const solidIndex = droppedSolids.findIndex(s => s.id === id);
+            if (solidIndex > -1) {
+                droppedSolids[solidIndex].el.remove();
+                droppedSolids.splice(solidIndex, 1);
+            }
+        }
+
+        // 7. 전체 초기화
+        function clearAll() {
+            activeLiquids.clear();
+            droppedSolids.forEach(s => s.el.remove());
+            droppedSolids = [];
+            
+            document.querySelectorAll('#liquid-buttons button').forEach(btn => btn.classList.remove('active-liquid'));
+            recalculatePhysics();
+        }
+
+        // 8. 물리 계산 및 UI 위치 업데이트 (핵심 로직)
+        function recalculatePhysics() {
+            const activeLiqData = [];
+            let currentBottom = 0;
+            
+            // 밀도 내림차순(무거운 것이 바닥) 정렬
+            const sortedLiquidKeys = Object.keys(LIQUIDS).sort((a, b) => LIQUIDS[b].density - LIQUIDS[a].density);
+
+            // 1. 액체 애니메이션 및 위치 설정
+            sortedLiquidKeys.forEach(key => {
+                const el = document.getElementById(`liquid-${key}`);
+                if (activeLiquids.has(key)) {
+                    activeLiqData.push(LIQUIDS[key]);
+                    el.style.height = LAYER_HEIGHT + 'px';
+                    el.style.bottom = currentBottom + 'px';
+                    el.style.opacity = '1';
+                    currentBottom += LAYER_HEIGHT;
+                } else {
+                    el.style.height = '0px';
+                    el.style.opacity = '0';
+                }
+            });
+
+            // 2. 고체 위치 렌더링
+            droppedSolids.forEach(solid => {
+                let finalBottom = 0; // 기본적으로 바닥(0)까지 가라앉음
+
+                // 가장 위쪽 액체(가장 가벼운 액체)부터 검사
+                for (let i = activeLiqData.length - 1; i >= 0; i--) {
+                    const liq = activeLiqData[i];
+                    
+                    // 물체의 밀도가 액체보다 작으면 해당 액체에 뜹니다.
+                    if (solid.density < liq.density) {
+                        const liqTopSurface = (i + 1) * LAYER_HEIGHT;
+                        const submersionRatio = solid.density / liq.density;
+                        const submergedDepth = solid.size * submersionRatio; // 물체의 크기를 비례하여 잠긴 깊이 계산
+                        
+                        finalBottom = liqTopSurface - submergedDepth;
+
+                        // 특수 효과: 숨을 들이마신 사람은 시각적으로 물 위에 더 떠 보이도록 위치를 약간 위로 보정합니다.
+                        if (solid.type === 'inhale') {
+                            finalBottom += 60; // 머리가 물 표면에 닿도록 위로 대폭 이동
+                        } else if (solid.type === 'ice') {
+                            // 수정됨: 텍스트 영역을 제외한 실제 '얼음 아이콘(크기 약 42px)'을 기준으로 
+                            // 정확히 절반(21px)이 물 표면 위로 올라오게 고정합니다.
+                            finalBottom = liqTopSurface - 21; 
+                        }
+
+                        break; // 위치를 찾았으므로 하위 액체 검사 중단
+                    }
+                }
+
+                solid.el.style.bottom = finalBottom + 'px';
+
+                // 특수 효과: 숨을 내쉰 사람이 바닥(finalBottom === 0)에 완전히 가라앉으면 눕게 만듭니다.
+                const iconWrapper = solid.el.querySelector('.icon-wrapper');
+                if (iconWrapper) {
+                    if (solid.type === 'exhale' && finalBottom <= 0) {
+                        iconWrapper.style.transform = 'rotate(90deg)'; // 바닥에 닿으면 90도 회전
+                    } else {
+                        iconWrapper.style.transform = 'rotate(0deg)';
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
