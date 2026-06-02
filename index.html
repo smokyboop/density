@@ -46,12 +46,37 @@
             width: 100%;
         }
 
-        @media (max-width: 768px) {
-            .content-area {
-                flex-direction: column;
-                align-items: center;
-            }
+        /* 상단 타이틀 영역 */
+        .title-area { 
+            margin-bottom: 10px; 
+            padding-bottom: 15px; 
+            border-bottom: 2px solid var(--bg-color); /* 제목과 내용 사이 구분선 추가 */
+            text-align: center; /* 텍스트 가로 중앙 정렬 추가 */
         }
+        
+        .title-top {
+            display: flex;
+            align-items: center;
+            justify-content: center; /* 플렉스(Flex) 요소인 소제목과 아이콘 중앙 정렬 추가 */
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            font-weight: 800;
+            color: #ec4899; /* 톡톡 튀는 핑크색 포인트 */
+        }
+
+        .main-title { 
+            margin: 0 0 10px 0; 
+            font-size: 24px; 
+            color: #0f172a; 
+            line-height: 1.35;
+            word-break: keep-all;
+        }
+        
+        p.desc { margin: 0; font-size: 14px; color: var(--text-light); line-height: 1.5; }
 
         /* 비커(수조) 영역 */
         .beaker-section {
@@ -136,11 +161,10 @@
 
         .solid {
             position: absolute;
-            /* width와 height는 JS에서 동적으로 할당됩니다 */
             transition: bottom 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
             display: flex;
             flex-direction: column;
-            justify-content: flex-end; /* 수정: 아이콘이 바닥에 완벽히 닿도록 아래쪽으로 정렬 */
+            justify-content: flex-end; /* 아이콘이 바닥에 완벽히 닿도록 아래쪽으로 정렬 */
             align-items: center;
             /* 사각형 배경을 제거하기 위해 border-radius와 box-shadow를 초기화합니다. */
             border-radius: 0;
@@ -182,37 +206,6 @@
             flex-direction: column;
             gap: 25px;
         }
-
-        .title-area { 
-            margin-bottom: 10px; 
-            padding-bottom: 15px; 
-            border-bottom: 2px solid var(--bg-color); /* 제목과 내용 사이 구분선 추가 */
-            text-align: center; /* 텍스트 가로 중앙 정렬 추가 */
-        }
-        
-        .title-top {
-            display: flex;
-            align-items: center;
-            justify-content: center; /* 플렉스(Flex) 요소인 소제목과 아이콘 중앙 정렬 추가 */
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            font-size: 18px;
-            font-weight: 800;
-            color: #ec4899; /* 톡톡 튀는 핑크색 포인트 */
-        }
-
-        .main-title { 
-            margin: 0 0 10px 0; 
-            font-size: 24px; 
-            color: #0f172a; 
-            line-height: 1.35;
-            word-break: keep-all;
-        }
-        
-        p.desc { margin: 0; font-size: 14px; color: var(--text-light); line-height: 1.5; }
 
         .control-group {
             background-color: #f8fafc;
@@ -284,17 +277,57 @@
         }
         .btn-reset:hover { background-color: #dc2626; }
 
+        /* === 반응형 처리 (모바일 & 태블릿 스크롤 해결) === */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 20px;
+            }
+            .content-area {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            /* 태블릿 크기에서는 비커 영역을 75%로 축소 */
+            .beaker-section {
+                transform: scale(0.75);
+                transform-origin: top center;
+                /* 축소되면서 생기는 아래쪽 빈 공간을 끌어당겨 없애줍니다 */
+                margin-bottom: -150px; 
+            }
+        }
+
+        /* 스마트폰(더 좁은 화면)을 위한 추가 설정 */
+        @media (max-width: 480px) {
+            .app-container {
+                padding: 15px;
+            }
+            
+            /* 스마트폰에서는 비커 영역을 55% 크기로 더 많이 축소 */
+            .beaker-section {
+                transform: scale(0.55);
+                margin-bottom: -270px;
+            }
+
+            /* 모바일에서는 버튼들이 너무 작아지지 않도록 2열로 크게 배치 */
+            .btn-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .main-title {
+                font-size: 20px; /* 폰트 크기 약간 줄임 */
+            }
+        }
+
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <!-- 상단 타이틀 영역 -->
         <div class="title-area">
             <div class="title-top">
                 <span class="subtitle">초미녀의 과학실험실</span>
                 <svg viewBox="0 0 24 24" width="28" height="28">
-                    <!-- 예쁜 비커/플라스크 아이콘 -->
                     <path d="M10 2v5.5l-5.7 10.45A2 2 0 0 0 6 21h12a2 2 0 0 0 1.7-2.95L14 7.5V2H10zm1.5 2h1v4.8l4.4 8.06a.5.5 0 0 1-.43.74H7.53a.5.5 0 0 1-.43-.74L11.5 8.8V4z" fill="#ec4899"/>
                     <path d="M7 16h10l1.2 2.2H5.8L7 16z" fill="#ec4899" opacity="0.3"/>
                 </svg>
@@ -303,9 +336,7 @@
             <p class="desc">액체 버튼을 눌러 수조에 붓고, 고체 버튼을 눌러 떨어뜨려 보세요.<br>밀도가 큰 물질은 아래로 가라앉고, 작은 물질은 위로 뜹니다.</p>
         </div>
 
-        <!-- 하단 내용 영역 (수조 + 컨트롤) -->
         <div class="content-area">
-            <!-- 비커 렌더링 영역 -->
             <div class="beaker-section">
                 <div class="beaker-wrapper">
                     <div class="beaker" id="beaker">
@@ -317,22 +348,17 @@
                 <div class="beaker-guide">물체를 클릭하면 수조에서 제거됩니다.</div>
             </div>
 
-            <!-- 컨트롤 영역 -->
             <div class="controls-section">
-                <!-- 액체 컨트롤 -->
                 <div class="control-group">
                     <h3>💧 액체 붓기 (Toggle)</h3>
                     <div class="btn-grid" id="liquid-buttons">
-                        <!-- 액체 버튼들이 JS로 생성됩니다 -->
-                    </div>
+                        </div>
                 </div>
 
-                <!-- 고체 컨트롤 -->
                 <div class="control-group">
                     <h3>🧊 물체 떨어뜨리기</h3>
                     <div class="btn-grid" id="solid-buttons">
-                        <!-- 고체 버튼들이 JS로 생성됩니다 -->
-                    </div>
+                        </div>
                 </div>
 
                 <button class="btn-reset" onclick="clearAll()">초기화 (모두 비우기)</button>
@@ -485,6 +511,7 @@
             el.id = id;
             el.style.left = leftPos + 'px';
             el.style.bottom = (BEAKER_HEIGHT + 20) + 'px'; // 수조 약간 위에서 시작
+            
             /* 배경색을 투명하게 설정하여 사각형 배경을 없앱니다. */
             el.style.backgroundColor = 'transparent';
             el.style.width = solidSize + 'px';
